@@ -1,0 +1,51 @@
+Note progetto programmazione
+
+Rete neurale di Hopfield 
+
+- sistema composto da N corpi
+- ogni neurone assume due stati possibili (+-1)[variabile booleana probabilmente]
+- connessioni simmetriche tra neurone A e B (se A --> B, B --> A)
+- regola di aggiornamento(?)
+
+Tre fasi principali:
+1. Acquisizione del pattern (convertire immagini in binari)
+- vettore di booleani (immagine convertita in +-1)
+- immagini (tutte della stessa dimensione) caricate pixel x pixel (SFML --> da guardare)
+- ogni pixel tre valori (Rosso, verde e blu): ciascuno compreso tra 0 e 255
+- ridimensionamento immagini: valore di ogni pixel nella nuova immagine viene calcolato come media pesata dei pixel vicini nell'immagine originale
+- media colore per pixel --> se m>127 pixel=+1 --> finita lettura matrice la si converte in vettore monodimensionale di booleani
+- associazione 1:1 vettore-immagine --> elemento i = neurone i
+- visualizzare immagine prima e dopo
+
+2. Apprendimento 
+- costruzione matrice W che contiene il peso delle "sinapsi"
+- implementazione con regola di Hebb (vedi formula)
+	- esempio di matrice con tre immagini:
+- Guardiamo l'Immagine 1:
+Il neurone 1 è chiaro (+1) e il neurone 2 è chiaro (+1).
+Moltiplicazione: (+1)*(+1) = +1
+- Guardiamo l'Immagine 2:
+Il neurone 1 è scuro (-1) e il neurone 2 è chiaro (+1).
+Moltiplicazione: (-1)*(+1) = -1
+- Guardiamo l'Immagine 3:
+Il neurone 1 è scuro (-1) e il neurone 2 è scuro (-1).
+Moltiplicazione: (-1)*(-1) = +1
+- Ora facciamo la somma dei risultati:(+1) + (-1) + (+1) = +1
+- Infine, dividiamo per N (supponiamo che l'immagine totale abbia 100 pixel/neuroni): W_{1,2} = +0.01
+- matrice simmetrica (A-->B, B-->A)
+- salvare matrice su file
+
+3. Richiamo (ricostruzione immagini)
+- presentazione pattern corrotto:
+	- rumore casuale: cambiare valore di qualche elemento
+	- taglio: invertire una parte di immagine (a specchio)
+-dinamica di aggiornamento:
+	- leggi valore neurone j
+	- leggi valore connessione tra i e j
+	- moltiplichi i due valori
+	- sommi tutta la riga della matrice
+		- se positiva i = +1
+		- se negativa i = -1
+-funzione di energia:
+	- moltiplico peso*i*j
+	-E(t) --> m dove m è il minimo 
