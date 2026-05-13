@@ -14,10 +14,23 @@ int main() {
 
     Hopfield net(N);
     net.train(patterns);
+
     std::cout << "Training completato\n";
+    net.printWeights();
+    net.saveWeights("weights.txt");
+
+    Hopfield net2(N);
+    net2.loadWeights("weights.txt");
+    net2.printWeights();
 
     std::vector<int> corrupted = {1, -1, 1, -1};
     std::vector<int> recovered = net.recall(corrupted);
+
+    std::cout << "Energia corrotto: " << net.energy(corrupted) << "\n";
+    std::cout << "Energia recovered: " << net.energy(recovered) << "\n";
+
+    std::vector<int> recovered2 = net2.recall(corrupted);
+
 
     std::cout << "Pattern corrotto: ";
     for(int v : corrupted) std::cout << v << " ";
