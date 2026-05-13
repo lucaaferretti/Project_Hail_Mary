@@ -2,7 +2,7 @@
 #define HOPFIELD_HPP
 
 #include <vector>
-#include <string>
+#include <string> 
 
 class Hopfield {
 
@@ -20,13 +20,15 @@ public:
 
     void loadWeights(const std::string& filename);
 
+    void printWeights() const;
+
 private:
 
     int N;
     std::vector<double> W;
 
     double& w(int i, int j) { return W[i*N + j]; }
-    double w(int i, int j) { return W[i*N + j]; }
+    double w(int i, int j) const { return W[i*N + j]; }
 
 };
 
