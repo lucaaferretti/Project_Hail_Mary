@@ -18,7 +18,7 @@ std::vector<int> loadPattern(const std::string& filename, int targetN) {
         throw std::runtime_error("loadPattern: impossibile aprire il file \"" + filename + "\"");
     }
  
-    // --- Ridimensionamento tramite RenderTexture ---
+    // Ridimensionamento tramite RenderTexture
     sf::Texture srcTexture;
     srcTexture.loadFromImage(srcImage);
  
@@ -41,7 +41,7 @@ std::vector<int> loadPattern(const std::string& filename, int targetN) {
     // Leggi i pixel dalla RenderTexture
     sf::Image scaled = rt.getTexture().copyToImage();
  
-    // --- Conversione pixel -> {+1, -1} ---
+    // Conversione pixel -> {+1, -1} 
     std::vector<int> pattern;
     pattern.reserve(static_cast<size_t>(targetN * targetN));
  
@@ -58,29 +58,88 @@ std::vector<int> loadPattern(const std::string& filename, int targetN) {
  
     return pattern;
 }
-//(void) serve per non far dare errore al compilatore
-//return{} serve per restituire un vettore int come da dichiarazione
-//ma vuoto
+
+// corruptPattern --> funzione che corrompe l'immagine in modo casuale
+// Itera su tutti i pixel e, con probabilità noiseLevel, inverte il valore (+1 diventa -1 e viceversa). 
+// Usa rand() con seed temporale.
 
 std::vector<int> corruptPattern(const std::vector<int>& pattern, double noiseLevel) {
-   
-    (void)noiseLevel;
-    return pattern;
+    //controllo che noiselevel sia compreso tra 0.0 e 1.0
+    if (noiseLevel < 0.0 || noiseLevel > 1.0) {
+        throw std::invalid_argument("corruptPattern: noiseLevel deve essere in [0.0, 1.0]");
+    } 
+ 
+    // Inizializza il generatore casuale (una sola volta per esecuzione)
+    static bool seeded = false;
+    if (!seeded) {
+        std::srand(static_cast<unsigned int>(std::time(nullptr)));
+        seeded = true;
+    }
+ 
+    std::vector<int> corrupted = pattern; // copia dell'originale
+ 
+    for (int& pixel : corrupted) {
+        // Genera un numero in [0, 1) e confronta con noiseLevel
+        double r = static_cast<double>(std::rand()) / (static_cast<double>(RAND_MAX) + 1.0);
+        if (r < noiseLevel) {
+            pixel = -pixel; // inversione del bit
+        }
+    }
+ 
+    return corrupted;
 }
-//si ritorna pattern per non far crashare il programma
 
+ 
+// cutPattern
+// Inverte tutti i pixel nella metà inferiore dell'immagine
+// (righe da height/2 a height-1).
+// Restituisce una copia; l'originale resta invariata.
 std::vector<int> cutPattern(const std::vector<int>& pattern, int width, int height) {
-    
-    (void)width;
-    (void)height;
-    return pattern;
+ 
+    if (static_cast<int>(pattern.size()) != width * height) {
+        throw std::invalid_argument("cutPattern: dimensioni width*height non corrispondono alla size del pattern");
+    }
+ 
+    std::vector<int> cut = pattern; // copia
+ 
+    int halfStart = (height / 2) * width; // indice del primo pixel della metà inferiore
+ 
+    for (int i = halfStart; i < width * height; ++i) {
+        cut[i] = -cut[i]; // inversione
+    }
+ 
+    return cut;
 }
-
+ 
+// savePattern
+// Costruisce una sf::Image di dimensioni width x height:
+//   +1  ->  pixel bianco (255, 255, 255)
+//   -1  ->  pixel nero   (  0,   0,   0)
+// Poi salva l'immagine nel file indicato tramite sf::Image::saveToFile().
+// L'estensione del filename determina il formato (es. ".png", ".bmp").
 void savePattern(const std::vector<int>& pattern, int width, int height,
                  const std::string& filename) {
-   
-    (void)pattern;
-    (void)width;
-    (void)height;
-    (void)filename;
+ 
+    if (static_cast<int>(pattern.size()) != width * height) {
+        throw std::invalid_argument("savePattern: dimensioni width*height non corrispondono alla size del pattern");
+    }
+ 
+    sf::Image image;
+    image.create(static_cast<unsigned int>(width),
+                 static_cast<unsigned int>(height),
+                 sf::Color::White);
+ 
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            int idx = y * width + x;
+            sf::Color color = (pattern[idx] == +1) ? sf::Color::White : sf::Color::Black;
+            image.setPixel(static_cast<unsigned int>(x),
+                           static_cast<unsigned int>(y),
+                           color);
+        }
+    }
+ 
+    if (!image.saveToFile(filename)) {
+        throw std::runtime_error("savePattern: impossibile salvare il file \"" + filename + "\"");
+    }
 }
