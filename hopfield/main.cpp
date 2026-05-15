@@ -42,5 +42,9 @@ int main() {
 
     std::cout << "Atteso: -1 1 1 -1\n";
 
+
+    std::vector<int> p = loadPattern("pic1_rgb.png", 100);
+    std::cout << "Pixel caricati: " << p.size() << "\n";
+
     return 0;
 }
